@@ -10,6 +10,8 @@
 #define MAXWORD 1024
 #define numOfThreads 4  
 
+pthread_mutex_t lock;
+
 typedef struct dict {
   char *word;
   int count;
@@ -20,8 +22,6 @@ typedef struct dict {
 char *make_word( char *word ) {
   return strcpy( malloc( strlen( word )+1 ), word );
 }
-
-pthread_mutex_t lock;
 
 dict_t *make_dict(char *word) {
   dict_t *nd = (dict_t *) malloc( sizeof(dict_t) );
@@ -34,22 +34,22 @@ dict_t *make_dict(char *word) {
 
 dict_t *insert_word( dict_t *d, char *word ) {
   dict_t *nd;
-  dict_t *pd = NULL;		// prior to insertion point 
-  dict_t *di = d;		// following insertion point
+  dict_t *pd = NULL; 
+  dict_t *di = d;
 
-  while(di && ( strcmp(word, di->word ) >= 0) ) { 
-    if( strcmp( word, di->word ) == 0 ) { 
-      di->count++;		 
+  while(di && ( strcmp(word, dictnry->word ) >= 0) ) { 
+    if( strcmp( word, dictnry->word ) == 0 ) { 
+      dictnry->count++;		 
       return d;		
     }
-    pd = di;			// advance ptr pair
-    di = di->next;
+    pd = dictnry;		
+    dictnry = dictnry->next;
   }
-  nd = make_dict(word);		// not found, make entry 
-  nd->next = di;		// entry bigger than word or tail 
+  nd = make_dict(word);
+  nd->next = dictnry;		
   if (pd) {
     pd->next = nd;
-    return d;			// insert beond head 
+    return d;	
   }
   return nd;
 }
@@ -67,7 +67,7 @@ int get_word( char *buf, int n, FILE *infile) {
   int c;  
   while( (c = fgetc(infile)) != EOF ) {
     if (inword && !isalpha(c)) {
-      buf[inword] = '\0';	// terminate the word string
+      buf[inword] = '\0';
       return 1;
     } 
     if (isalpha(c)) {
@@ -118,13 +118,13 @@ pthread_t threads[numOfThreads];
     		exit( EXIT_FAILURE );
   	}
 
-int k;
-for( k = 0; k <= numOfThreads; k++ ){
+int i;
+for( i = 0; i <= numOfThreads; i++ ){
 	pthread_create( &threads[k], NULL,&words, infile );
 }
 
-int j;
-for( j = 0; j <= numOfThreads; j++ ){
+int k;
+for( k = 0; k <= numOfThreads; k++ ){
 	pthread_join( threads[j], NULL );
 }
 	print_dict(d);
